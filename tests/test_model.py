@@ -1,6 +1,7 @@
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 import pytest
 import pandas as pd
 import numpy as np
@@ -8,6 +9,8 @@ from sklearn.pipeline import Pipeline
 from src.data_preprocessing import build_preprocessor, enrich_and_clean
 from src.model_training import train_model_with_cv
 from src.monitoring import ModelMonitor
+
+# ... rest of your tests (unchanged)
 
 @pytest.fixture
 def sample_data():
