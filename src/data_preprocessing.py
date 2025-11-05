@@ -4,15 +4,15 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from typing import Optional
+from typing import Optional  # ← ADD THIS
 from .utils import age_midpoint, icd_to_chapter, clean_special_strings
 
 
 def enrich_and_clean(
     df: pd.DataFrame,
-    adm_type_map: Optional[pd.DataFrame] = None,
-    disch_map: Optional[pd.DataFrame] = None,
-    adm_src_map: Optional[pd.DataFrame] = None,
+    adm_type_map: Optional[pd.DataFrame] = None,   # ← FIXED
+    disch_map: Optional[pd.DataFrame] = None,      # ← FIXED
+    adm_src_map: Optional[pd.DataFrame] = None,    # ← FIXED
 ) -> pd.DataFrame:
     df = df.copy()
 
@@ -61,7 +61,7 @@ def enrich_and_clean(
         if c in df:
             df[c] = pd.to_numeric(df[c], errors="coerce")
 
-    # tidy feature set (drop ids / leak-prone columns)
+    # tidy feature set
     drop_cols = [
         "encounter_id", "patient_nbr", "payer_code", "medical_specialty",
         "age", "diag_1", "diag_2", "diag_3"
@@ -78,24 +78,20 @@ def build_preprocessor(df: pd.DataFrame, target_col: str):
     num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
     cat_cols = X.select_dtypes(exclude=[np.number]).columns.tolist()
 
-    numeric = Pipeline(
-        steps=[
-            ("imputer", SimpleImputer(strategy="median")),
-            ("scaler", StandardScaler()),
-        ]
-    )
-    categorical = Pipeline(
-        steps=[
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
-        ]
-    )
+    numeric = Pipeline([
+        ("imputer", SimpleImputer(strategy="median")),
+        ("scaler", StandardScaler())
+    ])
+    categorical = Pipeline([
+        ("imputer", SimpleImputer(strategy="most_frequent")),
+        ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False))
+    ])
     preprocessor = ColumnTransformer(
         transformers=[
             ("num", numeric, num_cols),
             ("cat", categorical, cat_cols),
         ],
         remainder="drop",
-        verbose_feature_names_out=False,
+        verbose_feature_names_out=False
     )
     return preprocessor, num_cols, cat_cols
